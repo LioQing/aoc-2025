@@ -2,8 +2,9 @@ use itertools::Itertools;
 
 mod q1;
 mod q2;
+mod q3;
 
-const PUZZLES: &[fn(Option<&str>)] = &[q1::run, q2::run];
+const PUZZLES: &[fn(Option<&str>)] = &[q1::run, q2::run, q3::run];
 
 fn main() -> Result<(), String> {
     let puzzle_number = std::env::args()
