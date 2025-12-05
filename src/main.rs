@@ -1,11 +1,20 @@
 use itertools::Itertools;
 
-mod q1;
-mod q2;
-mod q3;
-mod q4;
+macro_rules! puzzles {
+    ($($mod_num:ident),* $(,)?) => {
+        $(
+            mod $mod_num;
+        )*
 
-const PUZZLES: &[fn(Option<&str>)] = &[q1::run, q2::run, q3::run, q4::run];
+        const PUZZLES: &[fn(Option<&str>)] = &[
+            $(
+                $mod_num::run,
+            )*
+        ];
+    };
+}
+
+puzzles!(q1, q2, q3, q4, q5);
 
 fn main() -> Result<(), String> {
     let puzzle_number = std::env::args()
