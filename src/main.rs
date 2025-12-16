@@ -14,7 +14,7 @@ macro_rules! puzzles {
     };
 }
 
-puzzles!(q1, q2, q3, q4, q5, q6, q7, q8, q9);
+puzzles!(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10);
 
 fn main() -> Result<(), String> {
     let puzzle_number = std::env::args()
@@ -23,8 +23,8 @@ fn main() -> Result<(), String> {
         .parse::<usize>()
         .map_err(|e| format!("Invalid puzzle number: {e}"))?;
 
-    println!("Enter the input (enter newline twice to finish):");
     let inp = std::env::args().any(|arg| arg == "--stdin").then(|| {
+        println!("Enter the input (enter newline twice to finish):");
         std::io::stdin()
             .lines()
             .map_while(Result::ok)

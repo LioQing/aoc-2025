@@ -6,3 +6,5 @@ edition = "2024"
 [dependencies]
 glam = "0.30"
 itertools = "0.14"
+ordered-float = "5.1.0"
+rayon = "1.11"
