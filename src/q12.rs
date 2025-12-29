@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use glam::*;
 use itertools::Itertools;
 
@@ -68,9 +66,9 @@ fn solution_p1(inp: Inp) -> usize {
         .count()
 }
 
-fn solution_p2(inp: Inp) -> u32 {
-    unimplemented!()
-}
+// fn solution_p2(inp: Inp) -> u32 {
+//     unimplemented!()
+// }
 
 pub fn run(inp: Option<&str>) {
     let inp = inp.unwrap_or(include_str!("../data/q12.txt"));
@@ -78,6 +76,6 @@ pub fn run(inp: Option<&str>) {
     let parsed = parse(inp);
     println!("p1: {}", solution_p1(parsed));
 
-    let parsed = parse(inp);
-    println!("p2: {}", solution_p2(parsed));
+    // let parsed = parse(inp);
+    // println!("p2: {}", solution_p2(parsed));
 }

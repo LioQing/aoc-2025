@@ -2,7 +2,6 @@ use std::collections::{HashMap, HashSet, VecDeque};
 
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
-use rayon::iter::{ParallelBridge, ParallelIterator};
 
 #[derive(Debug)]
 struct Machine {
@@ -216,11 +215,11 @@ fn solution_p2(inp: impl Iterator<Item = Machine>) -> u32 {
         } else {
             let pivot_cols = m
                 .iter()
-                .flat_map(|row| row.iter().position(|&x| x == 1f64))
-                .collect::<HashSet<_>>();
+                .map(|row| row.iter().position(|&x| x == 1f64))
+                .collect::<Vec<_>>();
 
             let free_cols = (0..machine.buttons.len())
-                .filter(|x| !pivot_cols.contains(x))
+                .filter(|x| !pivot_cols.iter().flatten().contains(x))
                 .collect::<Vec<_>>();
 
             // build all the button presses from the free vars
@@ -262,17 +261,47 @@ fn solution_p2(inp: impl Iterator<Item = Machine>) -> u32 {
                     .then(|| presses.iter().map(|&x| x as u32).sum())
             };
 
-            std::iter::repeat_n(
-                0..=machine.joltages.iter().max().map(|&x| x as i32).unwrap(),
-                free_cols.len(),
-            )
-            .multi_cartesian_product()
-            .par_bridge()
-            .flat_map(|product| presses_builder(&product))
-            .flat_map(|presses| press_counts(&presses))
-            .min()
-            // .inspect(|x| println!("{x}"))
-            .unwrap()
+            // post AOC optimization:
+            // try find the bounded max number of presses for some free cols
+            // so we can drop rayon dependency and still have a reasonable performance
+            let free_cols_max = m
+                .iter()
+                .zip(pivot_cols.iter())
+                .flat_map(|(row, pivot_col)| pivot_col.map(|col| (row, col)))
+                .filter(|(row, pivot_col)| {
+                    row.iter().skip(pivot_col + 1).all(|&x| x >= 0f64)
+                        && *row.last().unwrap() != 0f64
+                })
+                .fold(
+                    vec![
+                        machine.joltages.iter().max().map(|&x| x as i32).unwrap();
+                        free_cols.len()
+                    ],
+                    |mut maxes, (row, _)| {
+                        maxes
+                            .iter_mut()
+                            .zip(free_cols.iter())
+                            .map(|(max, &col)| (max, row[col]))
+                            .flat_map(|(max, coeff)| (coeff > 0f64).then_some((max, coeff)))
+                            .for_each(|(max, coeff)| {
+                                // assume all other vars are 0, find the max for this col
+                                let rhs = *row.last().unwrap();
+                                *max = (*max).min((rhs / coeff).floor() as i32);
+                            });
+                        maxes
+                    },
+                );
+
+            free_cols_max
+                .into_iter()
+                .map(|max| 0..=max)
+                .multi_cartesian_product()
+                // .par_bridge() // requires rayon dependency
+                .flat_map(|product| presses_builder(&product))
+                .flat_map(|presses| press_counts(&presses))
+                .min()
+                // .inspect(|x| println!("{x}"))
+                .unwrap()
         }
     })
     .sum()
